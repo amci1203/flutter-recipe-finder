@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'details.dart';
+import 'classes/api.dart';
 
 class ResultsList extends StatelessWidget {
   const ResultsList(this.title, this.results);
@@ -14,22 +15,30 @@ class ResultsList extends StatelessWidget {
 
     List<Widget> children = [];
     for (int i = 0, len = results.length; i < len; i++) {
-      if (i > 0) children.add(Divider(color: Colors.black));
+      var res = results[i];
 
       children.add(
         ListTile(
           title: Text(
-            results[i]['strMeal'],
+            res['strMeal'],
             style: textStyle,
           ),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Details(results[i])
-            ),
-           ),
+          onTap: () async {
+            Map recipe = res.containsKey('strInstructions')
+              ? res
+              : (await Api.query('lookup', {'i': res['idMeal']}))['meals'][0];
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Details(recipe)
+              ),
+           );
+          },
         )
       );
+
+      children.add(Divider(color: Colors.black));
     }
 
     return Scaffold(
